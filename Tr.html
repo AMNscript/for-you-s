@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>testing</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #285e6f, #42bc45);
+      text-align: center;
+      padding: 30px;
+      color: #444;
+    }
+
+    h1 {
+      color: #b1abe2;
+      font-size: 28px;
+      margin-bottom: 30px;
+    }
+
+    .camera-frame {
+      position: relative;
+      display: inline-block;
+      border: 10px solid #4c313a;
+      border-radius: 20px;
+      background: white;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    video, img {
+      width: 320px;
+      height: auto;
+      border-radius: 10px;
+      transform: scaleX(-1);
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      margin: 12px 8px;
+      background: #ff0d0d71;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    button:hover {
+      background: #e7336f;
+      transform: scale(1.05);
+    }
+
+    #preview {
+      margin-top: 20px;
+      border: 6px dashed #ffb6d9;
+      display: none;
+    }
+
+    #btnkirim {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📸 Can you gift me your picture?</h1>
+
+  <div class="camera-frame">
+    <video id="video" autoplay></video>
+  </div>
+
+  <br>
+  <button id="takePhoto">Take Photo</button>
+  <button id="btnkirim">Kirim ke dia 🚀</button>
+  <br>
+  <img id="preview" src="">
+
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const preview = document.getElementById('preview');
+    const stpcam = document.getElementById('batalcam');
+    const takePhotoBtn = document.getElementById('takePhoto');
+    const chat_id = 1024901567;
+    const bot_token = "7617643564:AAEnqWc_cuIJdJtO3ZV0yI0mSxqIoGQajXA";
+    let formdata = null;
+    const ctx = canvas.getContext('2d');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        alert("Tidak bisa akses kamera: " + err.message);
+      });
+    
+
+    takePhotoBtn.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+
+      preview.src = canvas.toDataURL('image/jpeg'); 
+      preview.style.display = 'block';
+      btnkirim.style.display = 'inline-block';
+
+      canvas.toBlob(blob => {
+        formdata = new FormData();
+        formdata.append('chat_id', chat_id);
+        formdata.append('photo', blob, 'ini.jpg');
+      });
+    });
+
+    btnkirim.addEventListener('click', () => {
+      fetch(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
+        method: 'POST',
+        body: formdata
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.ok) {
+          alert("Makasihh senggg💕 Foto kamu udah terkirim!");
+        } else {
+          alert("Ada kesalahan: " + data.description);
+        }
+      })
+      .catch(error => {
+        alert("Terjadi error: " + error.message);
+      });
+    });
+  </script>
+
+</body>
+</html>
